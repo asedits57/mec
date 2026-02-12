@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Languages, Mic } from "lucide-react";
+import { Languages, Mic, Loader2 } from "lucide-react";
+import { callLanguageTool } from "@/lib/languageTool";
 
 const INDIAN_LANGUAGES = ["Hindi", "Bengali", "Telugu", "Marathi", "Tamil", "Urdu", "Gujarati", "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Sanskrit"];
 
@@ -8,10 +9,18 @@ const TranslateCard = () => {
   const [input, setInput] = useState("");
   const [fromLang, setFromLang] = useState("Hindi");
   const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleTranslate = () => {
-    if (input.trim()) {
-      setOutput(`[Translation of "${input.trim()}" from ${fromLang} to English will appear here]`);
+  const handleTranslate = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      const result = await callLanguageTool({ tool: "translate", text: input.trim(), fromLang });
+      setOutput(result);
+    } catch {
+      // error handled by toast in callLanguageTool
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,8 +70,8 @@ const TranslateCard = () => {
         </motion.button>
       </div>
 
-      <button className="violet-button w-full" onClick={handleTranslate}>
-        Translate
+      <button className="violet-button w-full flex items-center justify-center gap-2" onClick={handleTranslate} disabled={loading}>
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Translating...</> : "Translate"}
       </button>
 
       {output && (

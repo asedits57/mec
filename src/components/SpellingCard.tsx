@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Type } from "lucide-react";
+import { Type, Loader2 } from "lucide-react";
+import { callLanguageTool } from "@/lib/languageTool";
 
-const DEMO_ERRORS = [
-  { word: "recieve", suggestion: "receive" },
-  { word: "occured", suggestion: "occurred" },
-  { word: "seperate", suggestion: "separate" },
-];
+interface SpellingError {
+  word: string;
+  suggestion: string;
+}
 
 const SpellingCard = () => {
   const [input, setInput] = useState("");
-  const [results, setResults] = useState<typeof DEMO_ERRORS>([]);
+  const [results, setResults] = useState<SpellingError[]>([]);
   const [checked, setChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleCheck = () => {
-    if (input.trim()) {
+  const handleCheck = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      const result = await callLanguageTool({ tool: "spelling", text: input.trim() });
+      const parsed = JSON.parse(result);
+      setResults(Array.isArray(parsed) ? parsed : []);
       setChecked(true);
-      const found = DEMO_ERRORS.filter((e) =>
-        input.toLowerCase().includes(e.word)
-      );
-      setResults(found.length > 0 ? found : []);
+    } catch {
+      setResults([]);
+      setChecked(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,36 +46,25 @@ const SpellingCard = () => {
 
       <textarea
         className="glass-input min-h-[100px]"
-        placeholder='Try typing "recieve", "occured", or "seperate"...'
+        placeholder="Enter text to check spelling..."
         value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-          setChecked(false);
-        }}
+        onChange={(e) => { setInput(e.target.value); setChecked(false); }}
       />
 
-      <button className="violet-button w-full" onClick={handleCheck}>
-        Check Spelling
+      <button className="violet-button w-full flex items-center justify-center gap-2" onClick={handleCheck} disabled={loading}>
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking...</> : "Check Spelling"}
       </button>
 
       {checked && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col gap-2"
-        >
-          {results.length > 0 ? (
-            results.map((r, i) => (
-              <div key={i} className="output-area flex items-center gap-3 text-xs">
-                <span className="highlight-error px-1">{r.word}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="highlight-suggestion px-1 text-accent">{r.suggestion}</span>
-              </div>
-            ))
-          ) : (
-            <div className="output-area text-xs text-center">
-              ✅ No spelling errors found!
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2">
+          {results.length > 0 ? results.map((r, i) => (
+            <div key={i} className="output-area flex items-center gap-3 text-xs">
+              <span className="highlight-error px-1">{r.word}</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="highlight-suggestion px-1 text-accent">{r.suggestion}</span>
             </div>
+          )) : (
+            <div className="output-area text-xs text-center">✅ No spelling errors found!</div>
           )}
         </motion.div>
       )}

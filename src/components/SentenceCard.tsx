@@ -1,14 +1,23 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { callLanguageTool } from "@/lib/languageTool";
 
 const SentenceCard = () => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleImprove = () => {
-    if (input.trim()) {
-      setOutput(`✨ Improved: "${input.trim()}" → A more polished and natural version of your sentence would appear here with inline suggestions highlighted.`);
+  const handleImprove = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      const result = await callLanguageTool({ tool: "improve", text: input.trim() });
+      setOutput(result);
+    } catch {
+      // handled
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,16 +42,12 @@ const SentenceCard = () => {
         onChange={(e) => setInput(e.target.value)}
       />
 
-      <button className="violet-button w-full" onClick={handleImprove}>
-        Improve
+      <button className="violet-button w-full flex items-center justify-center gap-2" onClick={handleImprove} disabled={loading}>
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Improving...</> : "Improve"}
       </button>
 
       {output && (
-        <motion.div
-          className="output-area text-sm"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-        >
+        <motion.div className="output-area text-sm" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
           {output}
         </motion.div>
       )}

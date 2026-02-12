@@ -1,19 +1,32 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
+import { callLanguageTool } from "@/lib/languageTool";
+
+interface GrammarIssue {
+  issue: string;
+  suggestion: string;
+}
 
 const GrammarCard = () => {
   const [input, setInput] = useState("");
-  const [issues, setIssues] = useState<string[]>([]);
+  const [issues, setIssues] = useState<GrammarIssue[]>([]);
   const [checked, setChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleCheck = () => {
-    if (input.trim()) {
+  const handleCheck = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      const result = await callLanguageTool({ tool: "grammar", text: input.trim() });
+      const parsed = JSON.parse(result);
+      setIssues(Array.isArray(parsed) ? parsed : []);
       setChecked(true);
-      setIssues([
-        "Consider using a comma before 'and' in a compound sentence.",
-        "The verb tense should be consistent throughout the paragraph.",
-      ]);
+    } catch {
+      setIssues([]);
+      setChecked(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,31 +48,23 @@ const GrammarCard = () => {
         className="glass-input min-h-[100px]"
         placeholder="Paste your text to check grammar..."
         value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-          setChecked(false);
-        }}
+        onChange={(e) => { setInput(e.target.value); setChecked(false); }}
       />
 
-      <button className="violet-button w-full" onClick={handleCheck}>
-        Check Grammar
+      <button className="violet-button w-full flex items-center justify-center gap-2" onClick={handleCheck} disabled={loading}>
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking...</> : "Check Grammar"}
       </button>
 
-      {checked && issues.length > 0 && (
-        <motion.div
-          className="flex flex-col gap-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          {issues.map((issue, i) => (
-            <div
-              key={i}
-              className="output-area flex items-start gap-2 text-xs"
-            >
-              <span className="mt-0.5 w-2 h-2 rounded-full bg-accent shrink-0" />
-              <span>{issue}</span>
+      {checked && (
+        <motion.div className="flex flex-col gap-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {issues.length > 0 ? issues.map((item, i) => (
+            <div key={i} className="output-area flex flex-col gap-1 text-xs">
+              <span className="text-destructive">⚠ {item.issue}</span>
+              <span className="text-accent">💡 {item.suggestion}</span>
             </div>
-          ))}
+          )) : (
+            <div className="output-area text-xs text-center">✅ No grammar issues found!</div>
+          )}
         </motion.div>
       )}
     </motion.div>
