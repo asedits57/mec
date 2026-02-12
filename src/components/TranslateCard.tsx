@@ -2,17 +2,16 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Languages, Mic } from "lucide-react";
 
-const LANGUAGES = ["English", "Spanish", "French", "German", "Arabic", "Chinese", "Japanese", "Korean", "Hindi", "Portuguese"];
+const INDIAN_LANGUAGES = ["Hindi", "Bengali", "Telugu", "Marathi", "Tamil", "Urdu", "Gujarati", "Kannada", "Malayalam", "Odia", "Punjabi", "Assamese", "Sanskrit"];
 
 const TranslateCard = () => {
   const [input, setInput] = useState("");
-  const [fromLang, setFromLang] = useState("English");
-  const [toLang, setToLang] = useState("Spanish");
+  const [fromLang, setFromLang] = useState("Hindi");
   const [output, setOutput] = useState("");
 
   const handleTranslate = () => {
     if (input.trim()) {
-      setOutput(`[Translation of "${input.trim()}" from ${fromLang} to ${toLang} will appear here]`);
+      setOutput(`[Translation of "${input.trim()}" from ${fromLang} to English will appear here]`);
     }
   };
 
@@ -36,20 +35,14 @@ const TranslateCard = () => {
           onChange={(e) => setFromLang(e.target.value)}
           className="glass-input !rounded-xl !py-2 flex-1 appearance-none cursor-pointer"
         >
-          {LANGUAGES.map((l) => (
+          {INDIAN_LANGUAGES.map((l) => (
             <option key={l} value={l} className="bg-card text-foreground">{l}</option>
           ))}
         </select>
         <span className="text-muted-foreground text-sm">→</span>
-        <select
-          value={toLang}
-          onChange={(e) => setToLang(e.target.value)}
-          className="glass-input !rounded-xl !py-2 flex-1 appearance-none cursor-pointer"
-        >
-          {LANGUAGES.map((l) => (
-            <option key={l} value={l} className="bg-card text-foreground">{l}</option>
-          ))}
-        </select>
+        <div className="glass-input !rounded-xl !py-2 flex-1 text-sm opacity-70">
+          English
+        </div>
       </div>
 
       <div className="relative">
