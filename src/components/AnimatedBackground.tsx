@@ -11,6 +11,10 @@ const AnimatedBackground = () => {
     if (!ctx) return;
 
     let animationId: number;
+    let lastTime = 0;
+    const FPS = 30;
+    const FRAME_MS = 1000 / FPS;
+
     let particles: Array<{
       x: number;
       y: number;
@@ -28,13 +32,14 @@ const AnimatedBackground = () => {
 
     const createParticles = () => {
       particles = [];
-      const count = Math.floor((canvas.width * canvas.height) / 25000);
+      // Reduced divisor for fewer particles → less draw cost
+      const count = Math.floor((canvas.width * canvas.height) / 40000);
       for (let i = 0; i < count; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
           size: Math.random() * 2 + 0.5,
           opacity: Math.random() * 0.4 + 0.1,
           hue: 265 + Math.random() * 20,
@@ -42,7 +47,12 @@ const AnimatedBackground = () => {
       }
     };
 
-    const animate = () => {
+    const animate = (timestamp: number) => {
+      animationId = requestAnimationFrame(animate);
+      // Throttle to 30fps
+      if (timestamp - lastTime < FRAME_MS) return;
+      lastTime = timestamp;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((p) => {
@@ -54,33 +64,27 @@ const AnimatedBackground = () => {
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
+        // Single draw per particle (removed duplicate glow arc)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.opacity})`;
         ctx.fill();
-
-        // Glow
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.opacity * 0.15})`;
-        ctx.fill();
       });
-
-      animationId = requestAnimationFrame(animate);
     };
 
     resize();
     createParticles();
-    animate();
+    animationId = requestAnimationFrame(animate);
 
-    window.addEventListener("resize", () => {
+    const handleResize = () => {
       resize();
       createParticles();
-    });
+    };
+    window.addEventListener("resize", handleResize);
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -94,3 +98,4 @@ const AnimatedBackground = () => {
 };
 
 export default AnimatedBackground;
+
