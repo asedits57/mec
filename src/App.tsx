@@ -8,6 +8,10 @@ import TaskDashboard from "./pages/TaskDashboard";
 import PracticeTest from "./pages/PracticeTest";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import HelpSupportPage from "./pages/HelpSupportPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import { supabase } from "./lib/leaderboard-supabase";
 
 const queryClient = new QueryClient();
@@ -38,6 +42,10 @@ const App = () => (
           <Route path="/task" element={<TaskDashboard />} />
           <Route path="/task/practice/:level" element={<PracticeTest />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpSupportPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
