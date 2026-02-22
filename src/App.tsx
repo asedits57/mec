@@ -12,12 +12,13 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import AuthPage from "./pages/AuthPage";
+import AuthGuard from "./components/AuthGuard";
 import { supabase } from "./lib/leaderboard-supabase";
 
 const queryClient = new QueryClient();
 
 // Prefetch leaderboard data immediately when the app loads.
-// By the time the user clicks "Leaderboard", the data is already in cache → zero wait.
 queryClient.prefetchQuery({
   queryKey: ["leaderboard"],
   queryFn: async () => {
@@ -28,7 +29,7 @@ queryClient.prefetchQuery({
     if (error) throw error;
     return data ?? [];
   },
-  staleTime: 5 * 60_000, // treat as fresh for 5 minutes
+  staleTime: 5 * 60_000,
 });
 
 const App = () => (
@@ -38,14 +39,15 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/task" element={<TaskDashboard />} />
-          <Route path="/task/practice/:level" element={<PracticeTest />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/help" element={<HelpSupportPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
+          <Route path="/task" element={<AuthGuard><TaskDashboard /></AuthGuard>} />
+          <Route path="/task/practice/:level" element={<AuthGuard><PracticeTest /></AuthGuard>} />
+          <Route path="/leaderboard" element={<AuthGuard><Leaderboard /></AuthGuard>} />
+          <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
+          <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+          <Route path="/help" element={<AuthGuard><HelpSupportPage /></AuthGuard>} />
+          <Route path="/privacy" element={<AuthGuard><PrivacyPage /></AuthGuard>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

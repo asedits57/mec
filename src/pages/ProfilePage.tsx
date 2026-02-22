@@ -3,8 +3,9 @@ import {
     Home, CheckSquare, Trophy, User, Settings,
     Flame, Star, BookOpen, Clock, Target,
     TrendingUp, Award, Crown, CheckCircle, Edit3,
-    Bell, Lock, Volume2, X, Save,
+    Bell, Lock, Volume2, X, Save, LogOut,
 } from "lucide-react";
+import { clearUser } from "@/lib/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import AnimatedBackground from "@/components/AnimatedBackground";
@@ -93,6 +94,13 @@ export default function ProfilePage() {
         showToast("Profile saved ✓");
     };
 
+
+
+    const handleLogout = () => {
+        clearUser();
+        navigate("/login");
+    };
+
     const statsCards = [
         { label: "Words Learned", value: "1,247", icon: BookOpen, color: "text-violet-400" },
         { label: "Day Streak", value: "15", icon: Flame, color: "text-orange-400" },
@@ -127,14 +135,25 @@ export default function ProfilePage() {
                 <motion.div className="flex items-center justify-between mb-8"
                     initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <h1 className="font-display text-2xl font-bold glow-text">My Profile</h1>
-                    <button
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-                        style={glassBtn}
-                        aria-label="Settings"
-                        onClick={() => navigate("/settings")}
-                    >
-                        <Settings className="w-5 h-5" style={{ color: "hsl(270, 80%, 75%)" }} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                            style={glassBtn}
+                            aria-label="Settings"
+                            onClick={() => navigate("/settings")}
+                        >
+                            <Settings className="w-5 h-5" style={{ color: "hsl(270, 80%, 75%)" }} />
+                        </button>
+                        <button
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                            style={{ background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.25)" }}
+                            aria-label="Logout"
+                            onClick={handleLogout}
+                            title="Logout"
+                        >
+                            <LogOut className="w-5 h-5" style={{ color: "hsl(0, 80%, 70%)" }} />
+                        </button>
+                    </div>
                 </motion.div>
 
                 {/* PROFILE CARD */}
